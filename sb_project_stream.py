@@ -18,6 +18,7 @@ barca1_lineup = barca1_lineup[['jersey_number', 'player_name', 'player_nickname'
 barca2_lineup = sb.lineups(match_id=69299)['Barcelona'] 
 barca2_lineup = barca1_lineup[['jersey_number', 'player_name', 'player_nickname']]
 
+
 koeman_face = Image.open('/Users/gianmarcozironelli/Desktop/koeman_face.png')
 guardiola_face = Image.open('/Users/gianmarcozironelli/Desktop/guardiola_face.png')
 
@@ -678,11 +679,14 @@ axs['pitch'][1].set_title('Messi passages 2009' ,color='white',size=25)
 
 #streamlit section
 with st.expander('Carries heatmap'):
+    st.write('Carries are the runs of the players with the ball. The data can be understood through the use of a heatmap')
     st.write("Data wrangling")
     st.code(dw_heatmap_code)
     st.write("creating the  Heamap")
     st.code(heatmap_code)
     st.write(heatmap)
+    st.caption('the graph shows how koemans game was very energy-intensive. Looking closely, in fact, the players were moving all over the field.')
+    st.caption('The Barcelona of 2010, on the other hand, managed to avoid this through the organisation described above')
     st.write("Messi Focus")
     st.write(messi_heatmap)
     st.write(heatmap_passes_messi)
@@ -746,10 +750,6 @@ shots_df['shot_distance'] = np.sqrt((shots_df.shot_xstart-shots_df.shot_xend)**2
 
 distance_goal_df = shots_df[['shot_outcome','shot_distance']]
 
-#violinplot
-
-
-
 dw_shots_code = '''
 
 #deleting shots registered from penalties or free kicks
@@ -774,7 +774,7 @@ distance_goal_df = shots_df[['shot_outcome','shot_distance']]
 
 
 with st.expander('Shots Analysis'):
-    st.write("Create a new df on GitHub to solve an issue with sb")
+    st.write("Create a new df on GitHub to solve an issue with sb that I hadn't with Colab")
     st.code(shots_df_retrieving)
     st.write("Data wrangling")
     st.code(dw_shots_code)
@@ -824,7 +824,7 @@ with st.expander('ML x Shots Analysis'):
         plt.title('Elbow Method')   
         plt.xticks(list(range(1,11)))
         st.write(scatter_2)
-
+        
     with col2:
 
         pitch = Pitch(pitch_type='statsbomb', pitch_color='#ffffff', line_color='#000000', half = True)
@@ -832,12 +832,14 @@ with st.expander('ML x Shots Analysis'):
         fig.set_facecolor('#ffffff')
         sns.scatterplot(data=shots_df, hue='shot_outcome', x='shot_xstart', y='shot_ystart')
         st.pyplot(fig)
-    st.write('The result:')
+    st.caption('The procedures before the clustering (plotting the data, analyze the # of clusters suggested by the elbow method)')
+
     km = KMeans(n_clusters=12, random_state=19)
     y_pred = km.fit_predict(x) 
     fig, ax = pitch.draw(figsize=(12, 8), constrained_layout=True, tight_layout=False)
     fig.set_facecolor('#ffffff')
-
+    
+    st.write('Now the locations are clustered by the field section in which the shot has been taken:')
     for i in range(12):
         plt.scatter(x.loc[y_pred==i, 'shot_xstart'], x.loc[y_pred==i, 'shot_ystart'], label=i) 
 
@@ -871,7 +873,7 @@ with st.expander('ML x Shots Analysis'):
     from sklearn.metrics import accuracy_score
     from sklearn.metrics import confusion_matrix
 
-with st.expander('Show model'):
+with st.expander('The models'):
     st.subheader('Will it be a Goal?')
     select_model = st.selectbox('Select model:', ['LogisticRegression','GaussianNB'])
     model = LogisticRegression()
