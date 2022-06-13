@@ -685,7 +685,7 @@ with st.expander('Carries heatmap'):
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
-#retrieving the data of the whole season
+shots_df_retrieving = '''
 grouped_events = sb.competition_events(
     country="Spain",
     division= "La Liga",
@@ -693,6 +693,30 @@ grouped_events = sb.competition_events(
     split=True
 )
 shots_df = grouped_events["shots"]
+
+#transforming the shot_end_location coordinates to unpack them
+shots_df['shot_end_location'] = shots_df['shot_end_location'].str.slice(0,2)
+
+shots_df['shot_xend'] = [x for x,y in shots_df['shot_end_location']]
+shots_df['shot_yend'] = [y for x,y in shots_df['shot_end_location']]
+
+#unpacking x and y
+shots_df['shot_xstart'] = [x for x,y in shots_df['location']]
+shots_df['shot_ystart'] = [y for x,y in shots_df['location']]
+
+#create a csv in google drive
+from google.colab import drive
+
+drive.mount('/content/drive')
+
+path = '/content/drive/MyDrive/statsbomb/shots_df.csv'
+
+with open(path, 'w', encoding = 'utf-8-sig') as f:
+     shots_df.to_csv(f)
+'''
+
+#retrieving the data of the whole season from my GitHub repository
+shots_df = pd.read_csv('https://raw.githubusercontent.com/gianmarcozironelli/statsbomb_project/main/shots_df.csv')
 
 #deleting shots registered from penalties or free kicks
 shots_df = shots_df.loc[~((shots_df['shot_type'] == 'Penalty'))]
@@ -705,15 +729,8 @@ shots_df['shot_outcome'] = shots_df['shot_outcome'].replace({'Goal':'1', 'Off T'
 
 shots_df = shots_df[['shot_aerial_won', 'shot_deflected', 'shot_one_on_one', 
                      'shot_open_goal','under_pressure','shot_outcome','location',
-                     'shot_end_location']].copy()
+                     'shot_end_location', 'shot_xstart', 'shot_ystart', 'shot_xend', 'shot_yend']].copy()
 
-#transforming the shot_end_location coordinates to unpack them
-shots_df['shot_end_location'] = shots_df['shot_end_location'].str.slice(0,2)
-
-shots_df['shot_xstart'] = [x for x,y in shots_df['location']]
-shots_df['shot_ystart'] = [y for x,y in shots_df['location']]
-shots_df['shot_xend'] = [x for x,y in shots_df['shot_end_location']]
-shots_df['shot_yend'] = [y for x,y in shots_df['shot_end_location']]
 
 #calculating the euclidean distance
 shots_df['shot_distance'] = np.sqrt((shots_df.shot_xstart-shots_df.shot_xend)**2 + (shots_df.shot_ystart-shots_df.shot_yend)**2)
@@ -722,6 +739,7 @@ distance_goal_df = shots_df[['shot_outcome','shot_distance']]
 
 fig, ax = plt.subplots()
 shot_distance = distance_goal_df.hist("shot_distance", ax = ax)
+plt.savefig('shot_distance.png')
 
 dw_shots_code = '''
 #retrieving the data of the whole season
@@ -749,8 +767,6 @@ shots_df = shots_df[['shot_aerial_won', 'shot_deflected', 'shot_one_on_one',
 #transforming the shot_end_location coordinates to unpack them
 shots_df['shot_end_location'] = shots_df['shot_end_location'].str.slice(0,2)
 
-shots_df['shot_xstart'] = [x for x,y in shots_df['location']]
-shots_df['shot_ystart'] = [y for x,y in shots_df['location']]
 shots_df['shot_xend'] = [x for x,y in shots_df['shot_end_location']]
 shots_df['shot_yend'] = [y for x,y in shots_df['shot_end_location']]
 
@@ -765,4 +781,5 @@ with st.expander('Shots Analysis'):
     st.write("Data wrangling")
     st.code(dw_shots_code)
     st.write("First view of the shooting distance")
-    st.write(shot_distance)
+    shot_distance_image = Image.open('shot_distance.png')
+    st.image(shot_distance_image)
