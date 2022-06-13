@@ -1,5 +1,3 @@
-from asyncio import events
-import code
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,10 +5,9 @@ from matplotlib.patches import Arc
 from mplsoccer.pitch import Pitch
 from statsbombpy import sb
 import streamlit as st
-import base64
 from PIL import Image
+import base64
 import seaborn as sns
-
 
 barca1_lineup = sb.lineups(match_id=3773585)['Barcelona'] 
 barca1_lineup = barca1_lineup[['jersey_number', 'player_name', 'player_nickname']]
@@ -18,23 +15,23 @@ barca1_lineup = barca1_lineup[['jersey_number', 'player_name', 'player_nickname'
 barca2_lineup = sb.lineups(match_id=69299)['Barcelona'] 
 barca2_lineup = barca1_lineup[['jersey_number', 'player_name', 'player_nickname']]
 
-
-koeman_face = Image.open('/Users/gianmarcozironelli/Desktop/koeman_face.png')
-guardiola_face = Image.open('/Users/gianmarcozironelli/Desktop/guardiola_face.png')
-
 st.header('StatsBomb Analysis')
 st.subheader('Ronald Koeman vs Pep Guardiola Playstyle')
+st.write('The objective of the project is to compare through data the same team (Barcelona) under the guidance of two different managers, searching for a possible style of play.')
+st.write('To do this, I selected a match from 2020 (under Koeman) and one from 2010 (under Guardiola), both against Real Madrid.')
+st.write('For a better understanding of the data there will be a "Messi Focus" for each scenario')
+
 
 col1, col2 = st.columns(2)
 with col1:
 
-    st.image(koeman_face)
+    st.image("https://raw.githubusercontent.com/gianmarcozironelli/statsbomb_project/main/manager_faces/koeman_face.png")
     st.write("Barcelona 2020")
     st.write(barca1_lineup)
 
 with col2:
 
-    st.image(guardiola_face)
+    st.image("https://raw.githubusercontent.com/gianmarcozironelli/statsbomb_project/main/manager_faces/guardiola_face.png")
     st.write("Barcelona 2010")
     st.write(barca2_lineup)
 
@@ -321,7 +318,7 @@ for ind in pass_df.index:
                        width=2,headwidth=10, headlength=10, color='#bd2924',
                        ax=axs['pitch'][0], label='other passes')
 
-#2009
+#2010
 for ind in pass2_df.index:
     if pass2_df['player'][ind] == 'Lionel Andrés Messi Cuccittini' and pass2_df['pass_outcome'][ind] == 'Complete':
          pitch.arrows((pass2_df['xstart'][ind]),(pass2_df['ystart'][ind]),
@@ -365,6 +362,7 @@ with st.expander('Pass Map'):
     st.code(code_4_2)
     pass_displot = Image.open('pass_displot.png')
     st.image(pass_displot)
+    st.caption("Through the displot, it is evident that Guardiola's team actually controlled the game by keeping possession in the middle, while the most recent Barcelona team tried to attack more often but also had more ball possession in the back.")
     st.write("Messi Focus")
     st.code(code_5)
     st.write(messi_pass_map)
@@ -607,7 +605,7 @@ kde2 = sns.kdeplot(carries2_df['carry_xstart'], carries2_df['carry_ystart'], cma
                   shade = True, alpha=0.7, shade_lowest=False, ax = axs['pitch'][1])
 
 axs['pitch'][0].set_title(' Heatmap 2020' ,color='white',size=25)
-axs['pitch'][1].set_title(' Heatmap 2009' ,color='white',size=25)
+axs['pitch'][1].set_title(' Heatmap 2010' ,color='white',size=25)
 
 heatmap_code = '''
 heatmap, axs = pitch.grid(ncols=2, axis=False, endnote_height=0.05)
@@ -620,7 +618,7 @@ kde2 = sns.kdeplot(carries2_df['carry_xstart'], carries2_df['carry_ystart'], cma
                   shade = True, alpha=0.7, shade_lowest=False, ax = axs['pitch'][1])
 
 axs['pitch'][0].set_title(' Heatmap 2020' ,color='white',size=25)
-axs['pitch'][1].set_title(' Heatmap 2009' ,color='white',size=25)
+axs['pitch'][1].set_title(' Heatmap 2010' ,color='white',size=25)
 
 '''
 
@@ -635,7 +633,7 @@ sns.kdeplot(messi_carries_df['carry_xstart'], messi_carries_df['carry_ystart'], 
 sns.kdeplot(messi_carries2_df['carry_xstart'], messi_carries2_df['carry_ystart'], shade = True, alpha=0.8, ax = axs['pitch'][1])
 
 axs['pitch'][0].set_title('Messi Heatmap 2020' ,color='white',size=25)
-axs['pitch'][1].set_title('Messi Heatmap 2009' ,color='white',size=25)
+axs['pitch'][1].set_title('Messi Heatmap 2010' ,color='white',size=25)
 
 #Heatmap + passes map of Leo Messi
 heatmap_passes_messi, axs = pitch.grid(ncols=2, axis=False, endnote_height=0.05)
@@ -655,7 +653,7 @@ for ind in pass_df.index:
                        width=2,headwidth=10, headlength=10, color='#bd2924',
                        ax=axs['pitch'][0], label='other passes')
 
-#2009
+#2010
 for ind in pass2_df.index:
     if pass2_df['player'][ind] == 'Lionel Andrés Messi Cuccittini' and pass2_df['pass_outcome'][ind] == 'Complete':
          pitch.arrows((pass2_df['xstart'][ind]),(pass2_df['ystart'][ind]),
@@ -673,7 +671,7 @@ sns.kdeplot(messi_carries_df['carry_xstart'], messi_carries_df['carry_ystart'], 
 sns.kdeplot(messi_carries2_df['carry_xstart'], messi_carries2_df['carry_ystart'], shade = True, alpha=0.3, ax = axs['pitch'][1])
 
 axs['pitch'][0].set_title('Messi passages 2020' ,color='white',size=25)
-axs['pitch'][1].set_title('Messi passages 2009' ,color='white',size=25)
+axs['pitch'][1].set_title('Messi passages 2010' ,color='white',size=25)
 
 
 
