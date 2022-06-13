@@ -11,7 +11,6 @@ import base64
 from PIL import Image
 import seaborn as sns
 
-st.set_page_config(layout="wide")
 
 barca1_lineup = sb.lineups(match_id=3773585)['Barcelona'] 
 barca1_lineup = barca1_lineup[['jersey_number', 'player_name', 'player_nickname']]
@@ -47,7 +46,8 @@ LaLiga_2020 = sb.matches(competition_id=11, season_id=90)
 
 
 with st.expander('Retrieving Data'):
-     st.text('Data can be accessed by importing "sb" from statsbombpy. All the instructions can be found on the homonym GitHub repository or on the Statsbomb website https://statsbomb.com/')
+     st.text('Data can be accessed by importing "sb" from statsbombpy.')
+     st.text('All the instructions can be found on the homonym GitHub repository or on the Statsbomb website https://statsbomb.com/')
      st.subheader('Available competitions')
      st.dataframe(competitions)
      st.subheader('La Liga 2020 Matches')
@@ -109,13 +109,11 @@ plt.xticks(rotation = 90)
 '''
 
 with st.expander('Data Exploration'):
-     st.write('A quick look at the raw data')
-     #st.write(raw_data_to_display)
      st.write('Data exploration and general cleaning')
      st.code(code_1, language='python')
+     st.write('**Most recurrent events**')
      st.write(fig_1)
-
-
+     st.caption('The image shows that the main events in soccer match are the passes and the carries')
 
 
 #PASS MAP
@@ -282,14 +280,15 @@ xstart_displot_df = xstart_displot_df.reset_index()
 sns.displot(xstart_displot_df, x="xstart", hue="team")
 plt.savefig('pass_displot.png')
 
-code_4 = '''
+code_4_1 = '''
 #calulating the xstart mean for each teams to better explain what the graph is showing us
 barcelona_pass_df= pass_df.groupby('team').mean()
 barcelona_pass2_df= pass2_df.groupby('possession_team').mean()
-barcelona_pass_df['xstart'] #62
-barcelona_pass2_df['xstart'] #59
+barcelona_pass_df['xstart']
+barcelona_pass2_df['xstart']
+'''
 
-#since I didn't expect those values, I'll try to plot a displot to understand what happened
+code_4_2= '''
 xstart_2020_df = pass_df.filter(['team', 'xstart'], axis=1)
 xstart_2010_df =pass2_df.filter(['possession_team', 'xstart'], axis=1)
 xstart_2010_df.rename(columns={'possession_team': 'team'}, inplace=True)
@@ -336,20 +335,23 @@ for ind in pass2_df.index:
                        ax=axs['pitch'][1], label='other passes')
 
 axs['pitch'][0].set_title('Messi passages 2020' ,color='white',size=25)
-axs['pitch'][1].set_title('Messi passages 2009' ,color='white',size=25)
+axs['pitch'][1].set_title('Messi passages 2010' ,color='white',size=25)
 
 code_5 ='''
-if pass2_df['player'][ind] == 'Lionel Andrés Messi Cuccittini' and pass2_df['pass_outcome'][ind] == 'Complete':
+if pass2_df['player'][ind] == 'Lionel Andrés Messi Cuccittini':
 '''
 
 #streamlit section
 with st.expander('Pass Map'):
-    st.write("Data wrangling")
+    st.write("The Pass type event is of course the main action in a match:")
+    st.write("In this section I will describe it with different graphs to explain the 2 playstyles")
+    st.write("**Data wrangling**")
     st.code(code_2)
     st.write("creating the Pass Map")
     st.code(code_3)
     st.write(pass_map)
-    st.code(code_4)
+    st.caption('Where green arrows are completed passes and red arrows are incorrect passes')
+    st.code(code_4_1)
     col1, col2 = st.columns(2)
     with col1:
 
@@ -357,7 +359,9 @@ with st.expander('Pass Map'):
     with col2:
 
         barcelona_pass2_df['xstart']
-    st.text('To better understand the 2 differents playstyles I created a displot based on the xstart')
+    st.text('since I did not expect those values, I will try to plot a displot')
+    st.text('to understand what happened based on the xstart.')
+    st.code(code_4_2)
     pass_displot = Image.open('pass_displot.png')
     st.image(pass_displot)
     st.write("Messi Focus")
@@ -549,11 +553,17 @@ axs['pitch'][1].set_title(' Network map 2010' ,color='white',size=25)
 
 #streamlit section
 with st.expander('Pass Network Map'):
+    st.write('To go deeper with the analysis, it is also necessary to visualise **links** between the players,')
+    st.write('It can be achieved by creating a *Network Pass map*')
     st.write("Data wrangling")
     st.code(dw_pass_network_map_code)
     st.write("creating the Pass Network Map")
     st.code(network_map_code)
     st.write(network_map)
+    st.caption("The high degree of game organisation by Guardiola's Barcelona is now even clearer.")
+    st.caption("With a higher density of passes, the links appear more pronounced.")
+    st.caption("Furthermore, the position of the players is not random. It is in fact the average position held.")
+
 
 #CARRIES HEATMAP
 #Data wrangling
@@ -626,7 +636,6 @@ sns.kdeplot(messi_carries2_df['carry_xstart'], messi_carries2_df['carry_ystart']
 axs['pitch'][0].set_title('Messi Heatmap 2020' ,color='white',size=25)
 axs['pitch'][1].set_title('Messi Heatmap 2009' ,color='white',size=25)
 
-
 #Heatmap + passes map of Leo Messi
 heatmap_passes_messi, axs = pitch.grid(ncols=2, axis=False, endnote_height=0.05)
 heatmap_passes_messi.set_facecolor('#46494d')
@@ -697,10 +706,10 @@ shots_df = grouped_events["shots"]
 #transforming the shot_end_location coordinates to unpack them
 shots_df['shot_end_location'] = shots_df['shot_end_location'].str.slice(0,2)
 
+#unpacking x and y
 shots_df['shot_xend'] = [x for x,y in shots_df['shot_end_location']]
 shots_df['shot_yend'] = [y for x,y in shots_df['shot_end_location']]
 
-#unpacking x and y
 shots_df['shot_xstart'] = [x for x,y in shots_df['location']]
 shots_df['shot_ystart'] = [y for x,y in shots_df['location']]
 
@@ -737,19 +746,11 @@ shots_df['shot_distance'] = np.sqrt((shots_df.shot_xstart-shots_df.shot_xend)**2
 
 distance_goal_df = shots_df[['shot_outcome','shot_distance']]
 
-fig, ax = plt.subplots()
-shot_distance = distance_goal_df.hist("shot_distance", ax = ax)
-plt.savefig('shot_distance.png')
+#violinplot
+
+
 
 dw_shots_code = '''
-#retrieving the data of the whole season
-grouped_events = sb.competition_events(
-    country="Spain",
-    division= "La Liga",
-    season="2020/2021",
-    split=True
-)
-shots_df = grouped_events["shots"]
 
 #deleting shots registered from penalties or free kicks
 shots_df = shots_df.loc[~((shots_df['shot_type'] == 'Penalty'))]
@@ -764,11 +765,6 @@ shots_df = shots_df[['shot_aerial_won', 'shot_deflected', 'shot_one_on_one',
                      'shot_open_goal','under_pressure','shot_outcome','location',
                      'shot_end_location']].copy()
 
-#transforming the shot_end_location coordinates to unpack them
-shots_df['shot_end_location'] = shots_df['shot_end_location'].str.slice(0,2)
-
-shots_df['shot_xend'] = [x for x,y in shots_df['shot_end_location']]
-shots_df['shot_yend'] = [y for x,y in shots_df['shot_end_location']]
 
 #calculating the euclidean distance
 shots_df['shot_distance'] = np.sqrt((shots_df.shot_xstart-shots_df.shot_xend)**2 + (shots_df.shot_ystart-shots_df.shot_yend)**2)
@@ -778,8 +774,120 @@ distance_goal_df = shots_df[['shot_outcome','shot_distance']]
 
 
 with st.expander('Shots Analysis'):
+    st.write("Create a new df on GitHub to solve an issue with sb")
+    st.code(shots_df_retrieving)
     st.write("Data wrangling")
     st.code(dw_shots_code)
     st.write("First view of the shooting distance")
-    shot_distance_image = Image.open('shot_distance.png')
-    st.image(shot_distance_image)
+    fig, ax = plt.subplots()
+    shot_distance = distance_goal_df.hist("shot_distance", ax = ax)
+    ax.set_xlabel('Distance (m)')
+    ax.set_ylabel('# shots')
+    st.pyplot(fig)
+    st.caption('The histogram was made to better understand the shot distribution.')
+
+    st.write("Shooting distance violinplot")
+    fig, ax = plt.subplots()
+    shot_distance_v = sns.violinplot(x="shot_outcome", y="shot_distance", data=distance_goal_df, inner="quart", ax=ax)
+    shot_distance_v.set(xlabel="Goal (0=no, 1=yes)",
+    ylabel="Distance (m)",
+    title="Distance of Shot from Goal vs. Result",ylim=(-5, 75))
+    st.pyplot(fig)
+    shots_df = shots_df.drop('location', 1)
+    shots_df = shots_df.drop('shot_end_location', 1)
+    shots_df = shots_df[['shot_aerial_won', 'shot_deflected','shot_one_on_one',
+                     'shot_open_goal','under_pressure','shot_outcome',
+                     'shot_xstart','shot_ystart']].copy()
+
+with st.expander('ML x Shots Analysis'):
+    st.subheader('Clustering the starting location of the shots to transform the coordinates in a value which can be used')
+    col1, col2 = st.columns(2)
+    with col1:
+
+        #creating the 2D array
+        x = shots_df[['shot_xstart','shot_ystart']]
+        scatter_1 = plt.figure(figsize=(10,6))
+        plt.scatter(x = x['shot_xstart'], y = x['shot_ystart'])
+        st.write(scatter_1)
+
+        #Elbow Method
+        #defining n_clusters with the elbow method
+        square_distances = []
+        for i in range(1, 11):
+            km = KMeans(n_clusters=i, random_state=19)
+            km.fit(x) #fit(X[, y, sample_weight]) --> Compute k-means clustering
+            square_distances.append(km.inertia_)
+        scatter_2 = plt.figure(figsize=(10, 6))
+        plt.plot(range(1,11), square_distances, 'bx-')
+        plt.xlabel('K')
+        plt.ylabel('inertia')
+        plt.title('Elbow Method')   
+        plt.xticks(list(range(1,11)))
+        st.write(scatter_2)
+
+    with col2:
+
+        pitch = Pitch(pitch_type='statsbomb', pitch_color='#ffffff', line_color='#000000', half = True)
+        fig, ax = pitch.draw(figsize=(12, 8), constrained_layout=True, tight_layout=False)
+        fig.set_facecolor('#ffffff')
+        sns.scatterplot(data=shots_df, hue='shot_outcome', x='shot_xstart', y='shot_ystart')
+        st.pyplot(fig)
+    st.write('The result:')
+    km = KMeans(n_clusters=12, random_state=19)
+    y_pred = km.fit_predict(x) 
+    fig, ax = pitch.draw(figsize=(12, 8), constrained_layout=True, tight_layout=False)
+    fig.set_facecolor('#ffffff')
+
+    for i in range(12):
+        plt.scatter(x.loc[y_pred==i, 'shot_xstart'], x.loc[y_pred==i, 'shot_ystart'], label=i) 
+
+    pitch = Pitch(pitch_type='statsbomb', pitch_color='#ffffff', line_color='#000000', half = True)
+    #centroids + legend
+    plt.ylabel('shot_ystart')
+    plt.xlabel('shot_xstart')
+    plt.scatter(km.cluster_centers_[:,0], km.cluster_centers_[:, 1], s=150, marker='^', c='cyan',)
+    plt.grid()  
+    plt.legend()
+    st.pyplot(fig)
+
+    #preparing the df
+    shots_df['KMeans_Clustering'] = y_pred
+    shots_df = shots_df.fillna(0)
+    shots_df['shot_aerial_won'].replace(True,'1', inplace=True)
+    shots_df['shot_deflected'].replace(True,'1', inplace=True)
+    shots_df['shot_one_on_one'].replace(True,'1', inplace=True)
+    shots_df['shot_open_goal'].replace(True,'1', inplace=True)
+    shots_df['under_pressure'].replace(True,'1', inplace=True)
+    y_outcome = shots_df['shot_outcome']
+    x_outcome = shots_df.drop('shot_outcome', axis=1)
+
+    #separate train and test data
+    from sklearn.model_selection import train_test_split
+    #GaussianNB
+    from sklearn.naive_bayes import GaussianNB
+    #Logistic Regression
+    from sklearn.linear_model import LogisticRegression
+    
+    from sklearn.metrics import accuracy_score
+    from sklearn.metrics import confusion_matrix
+
+with st.expander('Show model'):
+    st.subheader('Will it be a Goal?')
+    select_model = st.selectbox('Select model:', ['LogisticRegression','GaussianNB'])
+    model = LogisticRegression()
+
+    if select_model == 'GaussianNB':
+        model = GaussianNB()
+
+    test_size = st.slider('Test size: ', min_value=0.1, max_value=0.9, step =0.1)
+
+    if st.button('RUN MODEL'):
+        with st.spinner('Training...'):
+            x_train, x_test, y_train, y_test = train_test_split(x_outcome, y_outcome, test_size=test_size, random_state=19)
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+            accuracy = accuracy_score(y_test, y_pred)
+            cm = confusion_matrix(y_test, y_pred)
+            st.write(f'Accuracy = {accuracy:.2f}')
+            st.write('Confusion Matrix')
+            st.write(cm)
